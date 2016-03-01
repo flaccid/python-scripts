@@ -6,10 +6,20 @@ import requests
 import socket
 import time
 
-RANCHER_API_VERSION = 1
-HOSTNAME = socket.gethostname()
+# expects environment variables:
+# RANCHER_URL
+# RANCHER_ACCESS_KEY
+# RANCHER_SECRET_KEY
+# RANCHER_HOST_HOSTNAME (optional, by default uses the hostname script is run on)
 
-print('Local hostname: '+HOSTNAME)
+RANCHER_API_VERSION = 1
+
+if os.environ.has_key('RANCHER_HOST_HOSTNAME'):
+    HOSTNAME = os.environ['RANCHER_HOST_HOSTNAME']
+else:
+    HOSTNAME = socket.gethostname()
+
+print('Hostname of host being removed: '+HOSTNAME)
 print('RANCHER_URL='+os.environ['RANCHER_URL'] + '/v' + str(RANCHER_API_VERSION))
 
 for k in ['http_proxy', 'https_proxy', 'no_proxy']:
@@ -23,13 +33,14 @@ try:
 except ValueError:
     print("I'm sorry Dave.")
 
-if len(client.list_host(name=HOSTNAME)) > 0:
-    host_id = client.list_host(name=HOSTNAME)[0]['id']
+print('Finding host...')
+if len(client.list_host(hostname=HOSTNAME)) > 0:
+    host_id = client.list_host(hostname=HOSTNAME)[0]['id']
+    print('Found, Rancher host ID: ' + host_id)
 else:
     print('No hosts found, assuming already removed, skipping.')
     sys.exit()
 
-print('Rancher host ID: ' + host_id)
 print('Initial actions available:')
 print(client.by_id_host(host_id).actions)
 
