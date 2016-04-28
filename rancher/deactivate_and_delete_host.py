@@ -34,9 +34,19 @@ except ValueError:
     print("I'm sorry Dave.")
 
 print('Finding host...')
-if len(client.list_host(hostname=HOSTNAME)) > 0:
-    host_id = client.list_host(hostname=HOSTNAME)[0]['id']
-    print('Found, Rancher host ID: ' + host_id)
+
+# for some reason this doesn't work:
+#   hosts = client.list_host(hostname=HOSTNAME)
+hosts = client.list_host()
+print("%s hosts exist" % str(len(hosts)))
+
+# client side filter
+host = [e for e in hosts if e.get('hostname', None) == HOSTNAME]
+
+if len(hosts) > 0:
+    print("Found Rancher host '%s' (%s)" % (host[0]['hostname'], host[0]['id']))
+    host_id = host[0]['id']
+    # print host[0]
 else:
     print('No hosts found, assuming already removed, skipping.')
     sys.exit()
